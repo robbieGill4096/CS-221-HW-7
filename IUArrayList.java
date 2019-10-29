@@ -124,6 +124,7 @@ public class IUArrayList<T> implements IndexedUnsortedList<T>
 		{
 			throw new NoSuchElementException("Item not found - can't remove it."); 
 		}
+		
 		return remove(index);
 	}
 
@@ -219,7 +220,31 @@ public class IUArrayList<T> implements IndexedUnsortedList<T>
 		public void remove()
 		{
 			
+			//check if next has been called
+			if(canRemove == false) {
+				throw new IllegalStateException();
+			}
+			//remove the element 
+			T[] copyList = Arrays.copyOf(list,capacity-1);
+			for(int i = next-1; i < count - 1; i++)
+			{
+				list[i]=list[i+1];
+				//copyList[i] = list[i + 1]; 
+			}
+			list[count - 1] = null;
+		
+			//shift the array in a new copy index-1
+			
+			//reset canremove to false
+			//update itr modcount
+			next--;
+			itrModCount ++;
+			modCount ++;
+			count--;
+			//update modcount
+			
 			canRemove = false; 
+		
 		}
 		
 		/**
@@ -236,15 +261,16 @@ public class IUArrayList<T> implements IndexedUnsortedList<T>
 
 	@Override
 	public void addToFront(T element) {
+		checkCapacity(); 
 		T[] copy = Arrays.copyOf(list, capacity+1);
 		copy[0] = element;
-		for(int i = 1; i < capacity; i++) {
+		for(int i = 1; i < count+1; i++) {
 		copy[i]= list[i-1];
 		
 		
 		
 		}
-		
+		modCount++;
 		count+=1;
 		list = copy;
 		
@@ -265,8 +291,31 @@ public class IUArrayList<T> implements IndexedUnsortedList<T>
 
 	@Override
 	public void addAfter(T element, T target) {
+		checkCapacity();
 		//[A,B,C] addAfter(A,Z) --> [A,Z,B,C]
 		//[A,B,C] addAfter(Q,Z) --> throw new NoSuchElementException because Q is not in list.
+		int targetIndex = indexOf(target);
+		if(targetIndex == count) {
+			list[count-1] = element;
+			
+		}
+		if((targetIndex <= -1) || ((targetIndex)  >= (count))) {
+			throw new NoSuchElementException();
+		}
+		else {
+			//copylist
+			T[] copyList = Arrays.copyOf(list, capacity+1);
+			for(int i=targetIndex; i < ((count)-targetIndex); i++ ) {
+				
+				copyList[i+1]=list[i];
+			
+			}
+		copyList[targetIndex+1] = element;
+			count++;
+			modCount++;
+			list = copyList;
+		}
+			
 		
 		
 		
@@ -287,6 +336,7 @@ public class IUArrayList<T> implements IndexedUnsortedList<T>
 	}
 	if((index < count) && (index > -1)) {
 		list[index] = element;
+		modCount++;
 	}
 	else {
 		throw new IndexOutOfBoundsException();
@@ -303,7 +353,7 @@ public class IUArrayList<T> implements IndexedUnsortedList<T>
 		}
 		T firstElement = list[0];
 		T[] copy = Arrays.copyOf(list, capacity-1);
-		for(int i =1; i<capacity; i++) {
+		for(int i =1; i<count; i++) {
 			copy[i-1]=list[i];
 		}
 		list=copy;
@@ -321,7 +371,7 @@ public class IUArrayList<T> implements IndexedUnsortedList<T>
 		} 
 		T lastIndex = list[count-1];
 		T[] copy = Arrays.copyOf(list,capacity-1);
-		for(int i=0; i<capacity-1; i++) {
+		for(int i=0; i<count-1; i++) {
 			copy[i] = list[i];
 			
 		}
@@ -333,20 +383,25 @@ public class IUArrayList<T> implements IndexedUnsortedList<T>
 	@Override
 	public T first() {
 		
-		if(list[0] == null) {
+		if(count == 0) {
 			throw new NoSuchElementException();
 		}
+		
 		return list[0];
 	}
 
 	@Override
 	public T last() {
+		if (count == 0) {
+			throw new NoSuchElementException();
+		}
 		return list[count-1];
+		
 	}
 
 	@Override
 	public boolean contains(T target) {
-		for(int x = 0; x < capacity; x++) {
+		for(int x = 0; x < count; x++) {
 			if(list[x] == target) {
 				return true;
 			}
@@ -365,13 +420,13 @@ public class IUArrayList<T> implements IndexedUnsortedList<T>
 	@Override
 	public java.util.ListIterator<T> listIterator() {
 		// TODO Auto-generated method stub
-		return null;
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public java.util.ListIterator<T> listIterator(int startingIndex) {
 		// TODO Auto-generated method stub
-		return null;
+		throw new UnsupportedOperationException();
 	}
 	
 }
