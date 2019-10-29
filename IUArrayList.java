@@ -81,6 +81,7 @@ public class IUArrayList<T> implements IndexedUnsortedList<T>
 		T oldItem = list[pos];
 		list[pos] = item;
 		modCount++; 
+		
 	
 	}
 
@@ -324,24 +325,16 @@ public class IUArrayList<T> implements IndexedUnsortedList<T>
 
 	@Override
 	public void add(int index, T element) {
-		//[A,B] add(0,C) --> [C,B]
-		//[A,B] add(1,F) --> [A,F]
-		//[A,B] add(2,Z) --> [A,B,Z]
-		//valid add indexes 0,1,2
-	checkCapacity();
-	if (index == count) {
-		list[count] = element;
-		count++;
-		modCount++;
-	}
-	if((index < count) && (index > -1)) {
+		checkCapacity();
+		if(index >count || index <0) {
+			throw new IndexOutOfBoundsException();
+		}
+		for(int i = count-1; i>index-1; i--) {
+			list[i+1] = list[i];
+		}
 		list[index] = element;
 		modCount++;
-	}
-	else {
-		throw new IndexOutOfBoundsException();
-	}
-	
+		count++;
 	}
 
 	@Override
@@ -383,16 +376,15 @@ public class IUArrayList<T> implements IndexedUnsortedList<T>
 	@Override
 	public T first() {
 		
-		if(count == 0) {
+		if (isEmpty() == true) {
 			throw new NoSuchElementException();
 		}
-		
 		return list[0];
 	}
 
 	@Override
 	public T last() {
-		if (count == 0) {
+		if (isEmpty() == true) {
 			throw new NoSuchElementException();
 		}
 		return list[count-1];
@@ -412,6 +404,7 @@ public class IUArrayList<T> implements IndexedUnsortedList<T>
 	@Override
 	public boolean isEmpty() {
 		if(count == 0) {
+			
 		return (true);
 				}
 		return false;
